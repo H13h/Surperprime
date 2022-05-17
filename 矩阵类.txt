@@ -1,0 +1,118 @@
+#include<iostream>
+#include<string.h>
+using namespace std;
+
+class Matrix{
+	private:// 数据成员包括行数列数以及矩阵本身 
+		int cols;
+		int rows;
+		double *p;//用一维数组仿二维数组，方便理解，避免出错 
+	public:
+		Matrix(){//无参构造函数 
+			rows = 0;
+			cols = 0;
+			p = NULL;
+		}
+		Matrix(int row , int col , int value = 0.0){//有参构造函数，参数包括行数列数以及初值 
+			rows = row;
+			cols = col;
+			p = new double[rows * cols];//动态申请内存用于存放矩阵各个元素 
+			for(int i = 0 ; i < row ; i++){
+				for(int j = 0 ; j < col ; j++){
+					p[i * col + j] = value;//赋予初值 
+				}
+			}
+		}
+		~Matrix(){//析构函数，释放内存 
+			delete p;
+		}
+		int getrow(){
+			return rows;
+		}
+		int getcol(){
+			return cols;
+		}
+		double getvalue(int i , int j){//获取i行j列的元素的值
+			return p[(i - 1) * cols + j - 1];//由于数组脚标从零开始,因此i、j要减一 
+		}
+		void show(){//打印数组 
+			for(int i = 0 ; i < rows ; i++){
+				for(int j = 0 ; j < cols ; j++){
+					cout << p[i * cols + j] << " ";
+				}
+				cout << endl;
+			}
+		}
+		
+		Matrix operator+(Matrix m){//用运算符函数重载代替add函数 
+			if(m.getrow() != rows || m.getcol() != cols){
+				cout << "矩阵大小不同，无法相加。" << endl;
+				return *this; 
+			}
+			Matrix tem(rows , cols);//创建一个对象用于储存相加后的结果 
+			for(int i = 0 ; i < rows ; i++){
+				for(int j = 0 ; j < cols ; j++){
+					tem.p[i * cols + j] = m.getvalue(i + 1 , j + 1) + p[i * cols + j]; // 元素挨个相加 
+				}
+			}
+			return tem;
+		}
+		Matrix operator-(Matrix m){//同样用运算符重载代替sub函数 
+			if(m.getrow() != rows || m.getcol() != cols){
+				cout << "矩阵大小不同，无法相减。" << endl;
+				return *this;
+			}
+			Matrix tem(rows , cols);
+			for(int i = 0 ; i < rows ; i++){
+				for(int j = 0 ; j < cols ; j++){
+					tem.p[i * cols + j] = p[i * cols + j] - m.getvalue(i + 1 , j + 1);  
+				}
+			}
+			return tem;
+		}
+		Matrix operator*(Matrix m){//乘法的重载 
+			if(m.getrow() != cols){
+				cout << "无法相乘。" << endl;
+				return *this;
+			}
+			Matrix tem(rows , m.getcol());//新的矩阵取“前行后列” 
+			for(int i = 0 ; i < rows ; i++){
+				for(int j = 0 ; j < m.getcol() ; j++){//注意循环上限 
+					for(int k = 0 ; k < cols ; k++){
+						tem.p[i * m.getcol() + j] += p[i * cols + k] * m.getvalue(k + 1 , j + 1);//此处脚标易错 
+					}
+				}
+			}
+			return tem;
+		}
+		Matrix dot(Matrix m){//由于点乘没有对应运算符，就用成员函数dot 
+			if(m.getrow() != rows || m.getcol() != cols){
+				cout << "矩阵大小不同，无法点乘。" << endl;
+				return *this; 
+			}
+			Matrix tem(rows , cols);
+			for(int i = 0 ; i < rows ; i++){
+				for(int j = 0 ; j < cols ; j++){
+					tem.p[i * cols + j] = p[i * cols + j] * m.getvalue(i + 1 , j + 1); 
+				}
+			}
+			return tem;
+		}
+};
+
+
+#include"Matrix.h"
+
+int main(){
+	
+	Matrix m1(3 , 2 , 1) , m2(2 , 3 , 2) , m3(2 , 2 , 2) , m4(2 , 2 , 3) , m5(2 , 2);
+	cout << m1.getrow() << endl << m1.getcol() << endl << "****" << endl;//验证函数 
+	cout << m3.getvalue(2 , 2) << endl << m4.getvalue(2 , 2) << endl << "****" << endl; 
+	(m3 + m4).show();
+	(m3 - m4).show();
+	(m1 * m2).show();
+	( m3.dot(m4) ).show();//验证四种运算 
+	m5.show();
+	
+	return 0;
+}
