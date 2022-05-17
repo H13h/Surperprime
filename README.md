@@ -1,2 +1,0 @@
-# Surperprime
-Usual operation code
